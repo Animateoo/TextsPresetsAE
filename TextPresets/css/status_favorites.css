@@ -1,0 +1,44 @@
+/* Status Counter at Top - Compact Style */
+.status-container-top {
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+}
+
+.status-message {
+    text-align: center;
+    font-size: 11px;
+    color: #fc9300;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* GraphEditor-style Favorite Button */
+.favorite-star {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    font-size: 9px !important;
+    color: #444 !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 2px !important;
+    line-height: 1 !important;
+    z-index: 10 !important;
+    transition: color 0.2s !important;
+}
+
+.favorite-star.favorited {
+    color: #fc9300 !important;
+}
+
+.favorite-star:hover {
+    color: #fc9300 !important;
+}
+
+/* Ensure preset buttons have relative positioning for absolute favorite button */
+.effect-btn {
+    position: relative !important;
+}

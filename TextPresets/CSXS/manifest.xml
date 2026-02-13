@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="10.0" ExtensionBundleId="com.textpresets.tool" ExtensionBundleVersion="1.0.0"
+                   ExtensionBundleName="TextPresets" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Author>
+    <![CDATA[TextPresets Team]]>
+  </Author>
+  <Contact mailto="support@textpresets.com"/>
+  <Legal>
+    <![CDATA[Copyright 2026. All rights reserved.]]>
+  </Legal>
+  <Abstract>
+    <![CDATA[Professional text preset management tool for After Effects with entrance and exit animation presets.]]>
+  </Abstract>
+  <ExtensionList>
+    <Extension Id="com.textpresets.tool.panel" Version="1.0.0"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="AEFT" Version="[15.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.textpresets.tool.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/hostscript.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>TextPresets</Menu>
+          <Geometry>
+            <Size>
+              <Height>600</Height>
+              <Width>320</Width>
+            </Size>
+            <MinSize>
+              <Height>400</Height>
+              <Width>320</Width>
+            </MinSize>
+            <MaxSize>
+              <Height>1000</Height>
+              <Width>800</Width>
+            </MaxSize>
+          </Geometry>
+          <Icons>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

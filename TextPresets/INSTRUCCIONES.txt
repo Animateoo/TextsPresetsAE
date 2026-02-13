@@ -1,0 +1,49 @@
+🎬 TEXT PRESETS - GUÍA DE INSTALACIÓN (Windows & Mac)
+=====================================================
+
+Esta extensión te permite aplicar presets de texto profesionales de forma rápida en Adobe After Effects.
+
+---
+1. RUTAS DE INSTALACIÓN
+---
+
+Copia la carpeta "TextPresets" completa en la siguiente ruta según tu sistema operativo:
+
+💻 WINDOWS:
+C:\Program Files (x86)\Common Files\Adobe\CEP\extensions\
+
+🍎 MAC:
+~/Library/Application Support/Adobe/CEP/extensions/
+(En Finder presiona: Shift + Command + G y pega la ruta de arriba)
+
+---
+2. ACTIVACIÓN (IMPORTANTE: Solo la primera vez)
+---
+
+Como es una extensión personalizada, After Effects requiere activar el "Modo Debug" para permitir su carga:
+
+💻 WINDOWS:
+1. Haz clic derecho en el botón de Inicio y elige "Terminal" o "PowerShell".
+2. Copia y pega esta línea y presiona Enter:
+   reg add "HKCU\Software\Adobe\CSXS.11" /v PlayerDebugMode /t REG_SZ /d 1 /f
+
+🍎 MAC:
+1. Abre la aplicación "Terminal" (en Aplicaciones > Utilidades).
+2. Copia y pega esta línea y presiona Enter:
+   defaults write com.adobe.CSXS.11 PlayerDebugMode 1
+
+---
+3. CÓMO USAR LA EXTENSIÓN
+---
+
+1. Reinicia After Effects.
+2. Ve al menú superior: Ventana -> Extensiones -> TextPresets.
+3. El panel se abrirá y estará listo para usar.
+
+---
+🚀 COMPATIBILIDAD
+---
+- After Effects CC 2018 hasta After Effects 2026+.
+- Compatible con Windows 10/11 e Intel/Apple Silicon Mac.
+
+¡Disfruta tus animaciones! 🎬

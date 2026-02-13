@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextPresets</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="css/favorites.css">
+    <link rel="stylesheet" href="css/scroll.css">
+    <link rel="stylesheet" href="css/status_favorites.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎬 TextPresets</h1>
+            <div class="header-right">
+                <button class="favorites-toggle-btn" id="debugToggleBtn" title="Mostrar/Ocultar Debug Log"
+                    style="margin-right: 8px;">
+                    <span>🐛</span>
+                </button>
+                <button class="favorites-toggle-btn" id="favoritesToggleBtn" title="Mostrar solo favoritos">
+                    <span class="star-icon">☆</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 1: QUICK ANIMATOR -->
+        <div class="tab-content active" id="tab-quick">
+            <!-- Status Counter at Top -->
+            <div class="status-container-top">
+                <div class="status-message" id="statusMessage">✓ 0 presets cargados</div>
+                <!-- Debug Log Area -->
+                <div id="debugLog"
+                    style="display: none; height: 120px; min-height: 60px; max-height: 400px; overflow-y: auto; background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 8px; margin-top: 8px; font-family: 'Courier New', monospace; font-size: 10px; color: #0f0; resize: vertical;">
+                    <div style="margin-bottom: 4px; color: #888; border-bottom: 1px solid #333; padding-bottom: 4px;">
+                        <strong>DEBUG LOG</strong>
+                        <span style="color: #666; font-size: 9px; margin-left: 8px;">(arrastra la esquina ↘ para
+                            redimensionar)</span>
+                        <button onclick="document.getElementById('debugLog').style.display='none'"
+                            style="float: right; background: #333; border: none; color: #fff; padding: 2px 6px; cursor: pointer; border-radius: 3px;">✕</button>
+                    </div>
+                    <div id="debugLogContent"></div>
+                </div>
+            </div>
+
+            <!-- Scrollable Content Area -->
+            <div class="quick-animator-scroll">
+
+                <!-- FLAT FAVORITES LIST (shown when favorites toggle is active) -->
+                <div class="favorites-flat-container" id="favoritesFlatContainer" style="display: none;">
+                    <div class="favorites-flat-grid" id="favoritesFlatGrid"></div>
+                </div>
+
+                <!-- CATEGORIZED EFFECTS (hidden when favorites toggle is active) -->
+                <div class="categorized-effects" id="categorizedEffects">
+                    <!-- AE PRESETS - ENTRANCE -->
+                    <div class="category">
+                        <div class="category-header" data-category="ae-entrance">
+                            <span class="category-title">📥 PRESETS DE ENTRADA</span>
+                            <span class="category-icon">▼</span>
+                        </div>
+                        <div class="category-content" id="ae-entrance">
+                            <div class="effects-grid" id="grid-ae-entrance"></div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- MIS PRESETS - CUSTOM FROM ANIMATE FOLDER -->
+                    <div class="category">
+                        <div class="category-header" data-category="ae-custom">
+                            <span class="category-title">🎨 MIS PRESETS</span>
+                            <span class="category-icon">▼</span>
+                        </div>
+                        <div class="category-content" id="ae-custom">
+                            <div class="effects-grid" id="grid-ae-custom"></div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- AE PRESETS - EXIT -->
+                    <div class="category">
+                        <div class="category-header" data-category="ae-exit">
+                            <span class="category-title">📤 PRESETS DE SALIDA</span>
+                            <span class="category-icon">▼</span>
+                        </div>
+                        <div class="category-content" id="ae-exit">
+                            <div class="effects-grid" id="grid-ae-exit"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Fixed Controls Panel -->
+            <div class="controls-panel-fixed">
+                <!-- Row 1: Utilities -->
+                <div class="controls-row">
+                    <button id="importPresetBtn" class="btn-compact" title="Importar Preset .ffx">📥</button>
+                    <button id="saveSelectionBtn" class="btn-compact" title="Guardar Selección como Preset">💾</button>
+                    <button id="renamePresetBtn" class="btn-compact" title="Renombrar Preset Seleccionado">📝</button>
+                    <button id="deleteSelectedPresetBtn" class="btn-compact"
+                        title="Borrar Preset Seleccionado">🗑️</button>
+                    <button id="importSRTBtn" class="btn-compact" title="Importar SRT">📄</button>
+                    <button id="resetBtn" class="btn-compact" title="Resetear">🔄</button>
+                    <button id="refreshBtn" class="btn-compact" title="Actualizar">↻</button>
+                </div>
+
+                <!-- Row 3: Apply Buttons -->
+                <div class="apply-buttons-row">
+                    <button id="applyEntranceBtn" class="btn-apply btn-entrance">
+                        ⬇️ ENTRADA
+                    </button>
+                    <button id="applyExitBtn" class="btn-apply btn-exit">
+                        ⬆️ SALIDA
+                    </button>
+                    <button id="applyBothBtn" class="btn-apply btn-both">
+                        ⬍ AMBOS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: PRESET MANAGER -->
+        <div class="tab-content" id="tab-presets">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="presetSearch" class="search-input" placeholder="🔍 Buscar presets...">
+            </div>
+
+            <!-- Preset Manager Layout -->
+            <div class="preset-manager">
+                <!-- Sidebar: Categories -->
+                <div class="preset-sidebar">
+                    <div class="preset-category active" data-category="favorites">
+                        <div class="preset-category-header">
+                            <span>⭐ Favoritos</span>
+                            <span class="preset-count" id="count-favorites">0</span>
+                        </div>
+                    </div>
+                    <div class="preset-category" data-category="custom">
+                        <div class="preset-category-header">
+                            <span>📁 Personalizados</span>
+                            <span class="preset-count" id="count-custom">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preset-main">
+                    <div class="preset-grid" id="presetGrid">
+                        <!-- Presets will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Apply Buttons for Preset Manager -->
+            <div class="apply-buttons-fixed">
+                <button id="applyPresetEntranceBtn" class="btn-apply btn-entrance">
+                    ⬇️ ENTRADA
+                </button>
+                <button id="applyPresetExitBtn" class="btn-apply btn-exit">
+                    ⬆️ SALIDA
+                </button>
+                <button id="applyPresetBothBtn" class="btn-apply btn-both">
+                    ⬍ AMBOS
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="preset-actions">
+                <button id="createPresetBtn" class="btn-create-preset">
+                    + CREAR NUEVO PRESET
+                </button>
+                <div class="preset-action-row">
+                    <button id="importPresetsBtn" class="btn-secondary">
+                        📥 Importar
+                    </button>
+                    <button id="exportPresetsBtn" class="btn-secondary">
+                        📤 Exportar
+                    </button>
+                    <button id="applyPresetBtn" class="btn-apply btn-both">
+                        ✓ Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for SRT -->
+        <input type="file" id="srtFileInput" accept=".srt" style="display: none;">
+
+        <!-- Hidden file input for preset import -->
+        <input type="file" id="presetImportInput" accept=".ffx" multiple style="display: none;">
+
+    </div>
+
+    <!-- MODAL: Create/Edit Preset -->
+    <div class="modal" id="presetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Crear Nuevo Preset</h2>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre del Preset</label>
+                    <input type="text" id="presetName" class="form-input" placeholder="Mi Preset Personalizado">
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="presetType" class="form-select">
+                        <option value="entrance">Entrada</option>
+                        <option value="exit">Salida</option>
+                        <option value="both">Ambos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Animación Base (Entrada)</label>
+                    <select id="baseEntranceAnim" class="form-select">
+                        <option value="fade_in">🌫️ Fade In</option>
+                        <option value="slide_up">⬆️ Slide Up</option>
+                        <option value="slide_right">➡️ Slide Right</option>
+                        <option value="bounce_in">🏀 Bounce In</option>
+                        <option value="pop_in">🎈 Pop In</option>
+                        <option value="expand">💥 Expand</option>
+                        <option value="zoom_blur">🔭 Zoom Blur</option>
+                        <option value="rotate_3d">🔄 Rotate 3D</option>
+                        <option value="glitch">📺 Glitch</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Animación Base (Salida)</label>
+                    <select id="baseExitAnim" class="form-select">
+                        <option value="fade_out">🌫️ Fade Out</option>
+                        <option value="slide_down">⬇️ Slide Down</option>
+                        <option value="zoom_out">🔭 Zoom Out</option>
+                        <option value="shrink">🤏 Shrink</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Velocidad Entrada: <span id="modalEntranceSpeedValue">1.0x</span></label>
+                    <input type="range" id="modalEntranceSpeed" class="form-range" min="0.5" max="3.0" step="0.1"
+                        value="1.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Velocidad Salida: <span id="modalExitSpeedValue">1.0x</span></label>
+                    <input type="range" id="modalExitSpeed" class="form-range" min="0.5" max="3.0" step="0.1"
+                        value="1.0">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="presetFavorite">
+                        <span class="checkmark"></span>
+                        <span class="checkbox-label">⭐ Marcar como favorito</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelPresetBtn" class="btn-secondary">Cancelar</button>
+                <button id="savePresetBtn" class="btn-apply btn-both">Guardar Preset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./js/CSInterface.js"></script>
+    <script src="./js/main.js"></script>
+</body>
+
+</html>
