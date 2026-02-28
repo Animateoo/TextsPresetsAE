@@ -26,6 +26,7 @@ Además, incluye funciones para importar nuevos efectos, organizar tus favoritos
 2.  **Mover Carpeta**: Mueve la carpeta de la extensión a la ruta de Adobe:
     *   **Windows**: `C:\Program Files (x86)\Common Files\Adobe\CEP\extensions\`
     *   **macOS**: `/Library/Application Support/Adobe/CEP/extensions/`
+    
 3.  **Permisos de Carpeta (Windows - CRÍTICO)**:
     Para que la importación de presets y el guardado de estado funcionen correctamente, debes dar permisos de escritura a la carpeta:
     1.  Ve a `C:\Program Files (x86)\Common Files\Adobe\CEP\extensions\`
@@ -59,14 +60,6 @@ defaults write com.adobe.CSXS.12 PlayerDebugMode 1
 
 ---
 
-## 🔄 Últimas Actualizaciones (v3.1.0)
-*   **Alineación de Keyframes**: Añadido el botón "Alinear Keys a IN/OUT" para ajustar el tiempo de tus animaciones de forma manual con un clic.
-*   **Solución definitiva al error de JSON**: Corregido el problema de "Unexpected token : in JSON" que afectaba a usuarios con Windows en otros idiomas.
-*   **Motor de archivos estable**: Ahora las importaciones se manejan vía Node.js para evitar bloqueos del sistema.
-*   **Interfaz Premium**: Actualización de íconos vectoriales y layout más limpio para mayor comodidad.
-
----
-
 ## 📖 Cómo usar
 
 1.  **Reinicia** After Effects.
@@ -82,3 +75,4 @@ defaults write com.adobe.CSXS.12 PlayerDebugMode 1
 ¡Sugerencias, reportes de bugs y Pull Requests son bienvenidos! Esta herramienta es para que la comunidad crezca junta.
 
 Desarrollado con ❤️ por [Animateoo](https://github.com/Animateoo).
+
