@@ -1,14 +1,10 @@
 ﻿/**
  * TextPresets - CEP Host Script
  * @version 3.0.0
+ * JSON Polyfill for older AE versions
  */
-
-/**
- * TextPresets v3.0
- * Professional text animation toolkit for After Effects
- * @version 3.0.0
- * Features: Combined animations, custom easing, preview system, preset management
- */
+if (typeof JSON !== "object") { JSON = {}; }
+(function () { "use strict"; var rx_one = /^[\],:{}\s]*$/, rx_two = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, rx_three = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, rx_four = /(?:^|:|,)(?:\s*\[)+/g, rx_escapable = /[\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g, rx_dangerous = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g; function f(n) { return n < 10 ? "0" + n : n } function this_value() { return this.valueOf() } if (typeof Date.prototype.toJSON !== "function") { Date.prototype.toJSON = function () { return isFinite(this.valueOf()) ? this.getUTCFullYear() + "-" + f(this.getUTCMonth() + 1) + "-" + f(this.getUTCDate()) + "T" + f(this.getUTCHours()) + ":" + f(this.getUTCMinutes()) + ":" + f(this.getUTCSeconds()) + "Z" : null }; Boolean.prototype.toJSON = this_value; Number.prototype.toJSON = this_value; String.prototype.toJSON = this_value } var gap, indent, meta, stack; function quote(string) { rx_escapable.lastIndex = 0; return rx_escapable.test(string) ? '"' + string.replace(rx_escapable, function (a) { var c = meta[a]; return typeof c === "string" ? c : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4) }) + '"' : '"' + string + '"' } function str(key, holder) { var i, k, v, length, mind = gap, partial, value = holder[key]; if (value && typeof value === "object" && typeof value.toJSON === "function") { value = value.toJSON(key) } if (typeof JSON.stringify === "function" && typeof value === "object" && value !== null && !(value instanceof Array)) { return JSON.stringify(value) } if (typeof value === "string") { return quote(value) } if (typeof value === "number") { return isFinite(value) ? String(value) : "null" } if (typeof value === "boolean" || value === null) { return String(value) } if (typeof value === "object") { if (!value) { return "null" } gap += indent; partial = []; if (Object.prototype.toString.apply(value) === "[object Array]") { length = value.length; for (i = 0; i < length; i += 1) { partial[i] = str(i, value) || "null" } v = partial.length === 0 ? "[]" : gap ? "[\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "]" : "[" + partial.join(",") + "]"; gap = mind; return v } if (JSON.stringify && typeof JSON.stringify === "function") { return JSON.stringify(value) } for (k in value) { if (Object.prototype.hasOwnProperty.call(value, k)) { v = str(k, value); if (v) { partial.push(quote(k) + (gap ? ": " : ":") + v) } } } v = partial.length === 0 ? "{}" : gap ? "{\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "}" : "{" + partial.join(",") + "}"; gap = mind; return v } } if (typeof JSON.stringify !== "function") { meta = { "\b": "\\b", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r", '"': '\\"', "\\": "\\\\" }; JSON.stringify = function (value, replacer, space) { var i; gap = ""; indent = ""; if (typeof space === "number") { for (i = 0; i < space; i += 1) { indent += " " } } else if (typeof space === "string") { indent = space } if (!replacer || typeof replacer === "function" || (typeof replacer === "object" && typeof replacer.length === "number")) { return str("", { "": value }) } throw new Error("JSON.stringify") } } if (typeof JSON.parse !== "function") { JSON.parse = function (text, reviver) { var j; function walk(holder, key) { var k, v, value = holder[key]; if (value && typeof value === "object") { for (k in value) { if (Object.prototype.hasOwnProperty.call(value, k)) { v = walk(value, k); if (v !== undefined) { value[k] = v } else { delete value[k] } } } } return reviver.call(holder, key, value) } text = String(text); rx_dangerous.lastIndex = 0; if (rx_dangerous.test(text)) { text = text.replace(rx_dangerous, function (a) { return "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4) }) } if (rx_one.test(text.replace(rx_two, "@").replace(rx_three, "]").replace(rx_four, ""))) { j = eval("(" + text + ")"); return typeof reviver === "function" ? walk({ "": j }, "", j) : j } throw new SyntaxError("JSON.parse") } } })();
 
 
 // ============================================================================
@@ -148,7 +144,7 @@ var CONFIG = {
         },
         double_shadow: {
             name: "Doble",
-            icon: "👥",
+            icon: "\uD83D\uDC65",
             type: "entrance",
             textStyle: {
                 fontSize: 80
@@ -167,7 +163,7 @@ var CONFIG = {
         // EXIT ANIMATIONS
         fade_out: {
             name: "Fade Out",
-            icon: "●",
+            icon: "\u25CF",
             type: "exit",
             properties: {
                 opacity: { enabled: true, easing: "easeIn", duration: 0.4, from: 100, to: 0 }
@@ -175,7 +171,7 @@ var CONFIG = {
         },
         slide_down: {
             name: "Slide Down",
-            icon: "â†“",
+            icon: "\u2193",
             type: "exit",
             properties: {
                 opacity: { enabled: true, easing: "easeIn", duration: 0.4, from: 100, to: 0 },
@@ -184,7 +180,7 @@ var CONFIG = {
         },
         zoom_out: {
             name: "Zoom Out",
-            icon: "â—‰",
+            icon: "\u25C9",
             type: "exit",
             properties: {
                 opacity: { enabled: true, easing: "easeIn", duration: 0.5, from: 100, to: 0 }
@@ -192,7 +188,7 @@ var CONFIG = {
         },
         shrink: {
             name: "Shrink",
-            icon: "â—Ž",
+            icon: "\u25CE",
             type: "exit",
             properties: {
                 opacity: { enabled: true, easing: "easeIn", duration: 0.5, from: 100, to: 0 }
@@ -980,22 +976,9 @@ var AnimationEngine = {
     resetAnimations: function (layers) {
         app.beginUndoGroup("Reset Animations");
         try {
+            var comp = Utils.getActiveComp();
             for (var i = 0; i < layers.length; i++) {
                 var layer = layers[i];
-
-                // Remove expressions
-                if (layer.property("Position").canSetExpression) {
-                    layer.property("Position").expression = "";
-                }
-                if (layer.property("Scale").canSetExpression) {
-                    layer.property("Scale").expression = "";
-                }
-                if (layer.opacity.canSetExpression) {
-                    layer.opacity.expression = "";
-                }
-                if (layer.property("Rotation").canSetExpression) {
-                    layer.property("Rotation").expression = "";
-                }
 
                 // Remove text animators (added by FFX presets)
                 try {
@@ -1013,18 +996,29 @@ var AnimationEngine = {
                     // Layer might not have text properties
                 }
 
-                // Remove all effects (added by FFX presets)
+                // REMOVED: blind removal of all effects to preserve user modifications
+                /*
                 try {
                     var effectsGroup = layer.property("ADBE Effect Parade");
                     if (effectsGroup) {
-                        // Remove all effects
                         while (effectsGroup.numProperties > 0) {
                             effectsGroup.property(1).remove();
                         }
                     }
-                } catch (e) {
-                    // Error removing effects
-                }
+                } catch (e) {}
+                */
+
+                // Remove companion layers created by the tool
+                try {
+                    var layerName = layer.name;
+                    for (var j = 1; j <= comp.numLayers; j++) {
+                        var current = comp.layer(j);
+                        if (current.name === layerName + "_Shadow" || current.name === layerName + "_BG") {
+                            current.remove();
+                            j--; // Adjust index
+                        }
+                    }
+                } catch (e) { }
 
                 layer.comment = "";
             }
@@ -2174,4 +2168,140 @@ $.global.importCustomPresetsFromFolder = function (folderPath) {
     } catch (e) {
         return JSON.stringify({ error: e.toString() });
     }
+};
+
+/**
+ * KEYFRAME ALIGNMENT FUNCTIONS (From Keys_IN_OUT.jsx)
+ * Proportional remapping of keyframes to In/Out points
+ */
+$.global.alignKeysToInOut = function () {
+    app.beginUndoGroup("Alinear keyframes a IN/OUT");
+    try {
+        var comp = app.project.activeItem;
+        if (!comp || !(comp instanceof CompItem)) throw "Abre una composición activa.";
+
+        var layers = comp.selectedLayers;
+        if (!layers || layers.length === 0) throw "Selecciona al menos una capa.";
+
+        var layersCount = 0;
+
+        for (var i = 0; i < layers.length; i++) {
+            var layer = layers[i];
+            var props = getAllKeyframedProperties(layer);
+
+            for (var p = 0; p < props.length; p++) {
+                var prop = props[p];
+                try {
+                    remapPropertyKeys_Rebuild(prop, layer.inPoint, layer.outPoint);
+                } catch (err) {
+                    // Skip if property doesn't support remapping
+                }
+            }
+            layersCount++;
+        }
+
+        return JSON.stringify({ success: true, layersProcessed: layersCount });
+
+    } catch (e) {
+        return JSON.stringify({ error: e.toString() });
+    } finally {
+        app.endUndoGroup();
+    }
+
+    function getAllKeyframedProperties(layer) {
+        var results = [];
+        function scan(group) {
+            for (var i = 1; i <= group.numProperties; i++) {
+                var pr = group.property(i);
+                if (!pr) continue;
+                if (pr.propertyType === PropertyType.PROPERTY) {
+                    if (pr.isTimeVarying && pr.numKeys > 0) results.push(pr);
+                } else {
+                    scan(pr);
+                }
+            }
+        }
+        scan(layer);
+        return results;
+    }
+
+    function remapPropertyKeys_Rebuild(prop, inPoint, outPoint) {
+        if (!prop.isTimeVarying || prop.numKeys < 1) return;
+
+        var allKeys = [];
+        var remapIndices = [];
+        for (var k = 1; k <= prop.numKeys; k++) remapIndices.push(k);
+
+        // Min/Max of the keys
+        var minT = prop.keyTime(remapIndices[0]);
+        var maxT = minT;
+
+        for (var r = 1; r < remapIndices.length; r++) {
+            var t = prop.keyTime(remapIndices[r]);
+            if (t < minT) minT = t;
+            if (t > maxT) maxT = t;
+        }
+
+        var oldSpan = maxT - minT;
+        var newSpan = outPoint - inPoint;
+
+        // Snapshot all data
+        for (var idx = 1; idx <= prop.numKeys; idx++) {
+            var kt = prop.keyTime(idx);
+            var obj = {
+                oldIndex: idx,
+                oldTime: kt,
+                newTime: kt,
+                value: prop.keyValue(idx),
+                inInterp: safeGet(function () { return prop.keyInInterpolationType(idx); }),
+                outInterp: safeGet(function () { return prop.keyOutInterpolationType(idx); }),
+                inEase: safeGet(function () { return prop.keyInTemporalEase(idx); }),
+                outEase: safeGet(function () { return prop.keyOutTemporalEase(idx); }),
+                temporalAutoBezier: safeGet(function () { return prop.keyTemporalAutoBezier(idx); }),
+                temporalContinuous: safeGet(function () { return prop.keyTemporalContinuous(idx); }),
+                spatialAutoBezier: safeGet(function () { return prop.keySpatialAutoBezier(idx); }),
+                spatialContinuous: safeGet(function () { return prop.keySpatialContinuous(idx); }),
+                inSpatialTan: safeGet(function () { return prop.keyInSpatialTangent(idx); }),
+                outSpatialTan: safeGet(function () { return prop.keyOutSpatialTangent(idx); })
+            };
+            allKeys.push(obj);
+        }
+
+        // Remap logic
+        if (remapIndices.length === 1) {
+            allKeys[0].newTime = inPoint;
+        } else if (oldSpan === 0) {
+            var n = allKeys.length;
+            for (var rr = 0; rr < n; rr++) {
+                var normU = (n === 1) ? 0 : (rr / (n - 1));
+                allKeys[rr].newTime = inPoint + normU * newSpan;
+            }
+        } else {
+            for (var c = 0; c < allKeys.length; c++) {
+                var norm = (allKeys[c].oldTime - minT) / oldSpan;
+                allKeys[c].newTime = inPoint + norm * newSpan;
+            }
+        }
+
+        // Clear and rebuild
+        while (prop.numKeys > 0) prop.removeKey(1);
+        allKeys.sort(function (a1, a2) { return a1.newTime - a2.newTime; });
+
+        for (var nki = 0; nki < allKeys.length; nki++) {
+            var K = allKeys[nki];
+            prop.setValueAtTime(K.newTime, K.value);
+            var newIndex = prop.numKeys;
+
+            safeCall(function () { if (K.inInterp != null && K.outInterp != null) prop.setInterpolationTypeAtKey(newIndex, K.inInterp, K.outInterp); });
+            safeCall(function () { if (K.inEase != null && K.outEase != null) prop.setTemporalEaseAtKey(newIndex, K.inEase, K.outEase); });
+            safeCall(function () { if (K.temporalAutoBezier != null) prop.setTemporalAutoBezierAtKey(newIndex, K.temporalAutoBezier); });
+            safeCall(function () { if (K.temporalContinuous != null) prop.setTemporalContinuousAtKey(newIndex, K.temporalContinuous); });
+            safeCall(function () { if (K.spatialAutoBezier != null) prop.setSpatialAutoBezierAtKey(newIndex, K.spatialAutoBezier); });
+            safeCall(function () { if (K.spatialContinuous != null) prop.setSpatialContinuousAtKey(newIndex, K.spatialContinuous); });
+            safeCall(function () { if (K.inSpatialTan != null && K.outSpatialTan != null) prop.setSpatialTangentsAtKey(newIndex, K.inSpatialTan, K.outSpatialTan); });
+        }
+    }
+
+    function safeGet(fn) { try { return fn(); } catch (e) { return null; } }
+    function safeCall(fn) { try { fn(); } catch (e) { } }
 };

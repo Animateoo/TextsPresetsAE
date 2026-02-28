@@ -27,9 +27,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 10px 15px;
     background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    border-bottom: 2px solid #fc9300;
+    border-bottom: 1px solid #fc9300;
 }
 
 .header h1 {
@@ -42,7 +42,7 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
 }
 
 .version {
@@ -1128,33 +1128,43 @@ body {
     box-shadow: 0 2px 8px rgba(252, 147, 0, 0.3);
 }
 
-/* Favorites Toggle Button */
+/* Favorites Toggle Button (and other header utilities) */
 .favorites-toggle-btn {
-    background: #2a2a2a;
+    background: #333;
     border: 1px solid #444;
     color: #ccc;
-    padding: 8px 12px;
-    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s;
+    font-size: 14px;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .favorites-toggle-btn:hover {
-    background: #333;
+    background: #444;
     border-color: #fc9300;
     color: #fc9300;
-    transform: scale(1.05);
+}
+
+.favorites-toggle-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
 .favorites-toggle-btn.active {
     background: linear-gradient(135deg, #fc9300 0%, #ff6b00 100%);
     color: white;
-    border-color: #fc9300;
-    box-shadow: 0 2px 8px rgba(252, 147, 0, 0.3);
+    border-color: #ff6b00;
+}
+
+.favorites-toggle-btn.active svg {
+    fill: #fff;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
 }
 
 .favorites-toggle-btn .star-icon {

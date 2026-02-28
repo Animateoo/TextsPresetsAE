@@ -5,6 +5,16 @@
 
 // Initialize CSInterface
 const csInterface = new CSInterface();
+const extensionPath = csInterface.getSystemPath(SystemPath.EXTENSION);
+
+// Node.js modules for robust file handling
+let fs, path;
+try {
+    fs = require('fs');
+    path = require('path');
+} catch (e) {
+    console.error('Node.js modules not available:', e);
+}
 
 // ============================================================================
 // STATE MANAGEMENT
@@ -175,6 +185,7 @@ const elements = {
     applyExitBtn: document.getElementById('applyExitBtn'),
     applyBothBtn: document.getElementById('applyBothBtn'),
     resetBtn: document.getElementById('resetBtn'),
+    keysInOutBtn: document.getElementById('keysInOutBtn'),
     refreshBtn: document.getElementById('refreshBtn'),
     importSRTBtn: document.getElementById('importSRTBtn'),
     srtFileInput: document.getElementById('srtFileInput'),
@@ -311,6 +322,12 @@ function clearDebugLog() {
 
 function loadPresets() {
     evalScript('$.global.getPresets()', function (result) {
+        if (!result || result === 'undefined' || result.indexOf('Error') > -1) {
+            console.error('Invalid JSX result:', result);
+            setStatus('Error de conexión con After Effects', 'error');
+            return;
+        }
+
         try {
             const data = JSON.parse(result);
             if (data.error) {
@@ -321,53 +338,102 @@ function loadPresets() {
             state.currentPresets = data;
             populateEffectGrid();
         } catch (e) {
-            console.error('Error parsing presets:', e);
-            setStatus('Error: ' + e.message, 'error');
+            console.error('Error parsing presets:', e, 'Raw result:', result);
+            setStatus('Error de datos: ' + e.message, 'error');
         }
     });
 }
 
 function loadAEPresets() {
-    // Get extension path and use local presets folder
     const extensionPath = csInterface.getSystemPath(SystemPath.EXTENSION);
     const aePresetsPath = extensionPath + "/presets";
 
     console.log('Loading AE presets from extension:', aePresetsPath);
 
-    evalScript(`$.global.scanAEPresets("${aePresetsPath.replace(/\\/g, '\\\\')}")`, function (result) {
-        console.log('AE Presets scan result:', result);
+    // Try Node.js first (much more stable)
+    if (fs) {
+        try {
+            const result = { animateIn: [], animateOut: [] };
 
+            function scanDir(dir, type) {
+                if (fs.existsSync(dir)) {
+                    const files = fs.readdirSync(dir);
+                    files.forEach(file => {
+                        if (file.toLowerCase().endsWith('.ffx')) {
+                            const stats = fs.statSync(path.join(dir, file));
+                            result[type].push({
+                                id: 'ae_' + type + '_' + file,
+                                name: file.replace('.ffx', ''),
+                                path: path.join(dir, file).replace(/\\/g, '/'),
+                                isAEPreset: true,
+                                type: type === 'animateIn' ? 'entrance' : 'exit',
+                                size: stats.size,
+                                date: stats.mtime
+                            });
+                        }
+                    });
+                }
+            }
+
+            scanDir(path.join(aePresetsPath, 'Animate In'), 'animateIn');
+            scanDir(path.join(aePresetsPath, 'Animate Out'), 'animateOut');
+
+            // Scan custom presets folder (the one used for imports)
+            const animatePath = path.join(aePresetsPath, 'animate');
+            if (fs.existsSync(animatePath)) {
+                const files = fs.readdirSync(animatePath);
+                files.forEach(file => {
+                    if (file.toLowerCase().endsWith('.ffx')) {
+                        const stats = fs.statSync(path.join(animatePath, file));
+                        const presetObj = {
+                            id: 'ae_custom_' + file,
+                            name: file.replace('.ffx', ''),
+                            path: path.join(animatePath, file).replace(/\\/g, '/'),
+                            isAEPreset: true,
+                            isCustom: true, // IMPORTANT: This makes it show in "Mis Presets"
+                            type: 'entrance',
+                            size: stats.size,
+                            date: stats.mtime
+                        };
+                        // Add to both so they can be used for entrance and exit
+                        result.animateIn.push(presetObj);
+                        result.animateOut.push(presetObj);
+                    }
+                });
+            }
+
+            state.aePresets = result;
+            console.log('AE Presets loaded via Node.js:', result);
+            populateAEPresetGrids();
+            updateCategoryCounts();
+            if (state.currentPresetTab === 'ae') renderPresetGrid();
+
+            const total = result.animateIn.length + result.animateOut.length;
+            if (total > 0) setStatus(`✓ ${total} presets de AE cargados`, 'success');
+            return; // Success, skip JSX fallback
+        } catch (err) {
+            console.error('Node.js scan failed, falling back to JSX:', err);
+        }
+    }
+
+    // Fallback to JSX
+    evalScript(`$.global.scanAEPresets(${JSON.stringify(aePresetsPath)})`, function (result) {
+        if (!result || result === 'undefined' || result.indexOf('Error') > -1) {
+            console.error('Invalid AE Presets result:', result);
+            return;
+        }
         try {
             const data = JSON.parse(result);
             if (data.error) {
-                console.log('AE Presets not available:', data.error);
-                setStatus('Presets de AE no disponibles: ' + data.error, 'error');
+                setStatus('Presets de AE no disponibles', 'error');
                 return;
             }
-
-            console.log('AE Presets loaded:', data);
             state.aePresets = data;
-
-            // Always populate the grids in the quick tab
             populateAEPresetGrids();
-
             updateCategoryCounts();
-
-            // Also render grid if we're on AE presets tab
-            if (state.currentPresetTab === 'ae') {
-                renderPresetGrid();
-            }
-
-            const totalPresets = (data.animateIn?.length || 0) + (data.animateOut?.length || 0);
-            console.log(`Loaded ${totalPresets} AE presets (${data.animateIn?.length || 0} entrance, ${data.animateOut?.length || 0} exit)`);
-
-            if (totalPresets > 0) {
-                setStatus(`✓ ${totalPresets} presets de AE cargados`, 'success');
-            }
-
+            if (state.currentPresetTab === 'ae') renderPresetGrid();
         } catch (e) {
-            console.error('Could not load AE presets:', e);
-            setStatus('Error cargando presets de AE', 'error');
+            console.error('Could not load AE presets:', e, 'Raw result:', result);
         }
     });
 }
@@ -770,8 +836,7 @@ function handleApply(mode) {
         // Use built-in presets
         const entSpeed = elements.entranceSpeed.value;
         const exSpeed = elements.exitSpeed.value;
-
-        const script = `$.global.applyAnimations('${entranceKey}', '${exitKey}', ${batchMode}, ${entSpeed}, ${exSpeed})`;
+        const script = `$.global.applyAnimations(${JSON.stringify(entranceKey)}, ${JSON.stringify(exitKey)}, ${batchMode}, ${entSpeed}, ${exSpeed})`;
 
         evalScript(script, function (result) {
             elements.applyEntranceBtn.disabled = false;
@@ -808,8 +873,7 @@ function applyAEPresetsSequentially(entrancePreset, exitPreset, batchMode, callb
     // Apply entrance first, then exit (sequential, not parallel)
     if (entrancePreset && exitPreset) {
         // Both presets: apply entrance first
-        const escapedPath1 = entrancePreset.path.replace(/\\/g, '\\\\');
-        const script1 = `$.global.applyFFXPreset("${escapedPath1}", ${batchMode}, "entrance")`;
+        const script1 = `$.global.applyFFXPreset(${JSON.stringify(entrancePreset.path)}, ${batchMode}, "entrance")`;
 
         console.log('Applying entrance preset:', entrancePreset.name);
 
@@ -821,8 +885,7 @@ function applyAEPresetsSequentially(entrancePreset, exitPreset, batchMode, callb
                     totalLayers = data1.layersAnimated;
 
                     // Now apply exit preset
-                    const escapedPath2 = exitPreset.path.replace(/\\/g, '\\\\');
-                    const script2 = `$.global.applyFFXPreset("${escapedPath2}", ${batchMode}, "exit")`;
+                    const script2 = `$.global.applyFFXPreset(${JSON.stringify(exitPreset.path)}, ${batchMode}, "exit")`;
 
                     console.log('Applying exit preset:', exitPreset.name);
 
@@ -854,8 +917,7 @@ function applyAEPresetsSequentially(entrancePreset, exitPreset, batchMode, callb
         });
     } else if (entrancePreset) {
         // Only entrance
-        const escapedPath = entrancePreset.path.replace(/\\/g, '\\\\');
-        const script = `$.global.applyFFXPreset("${escapedPath}", ${batchMode}, "entrance")`;
+        const script = `$.global.applyFFXPreset(${JSON.stringify(entrancePreset.path)}, ${batchMode}, "entrance")`;
 
         console.log('Applying entrance preset:', entrancePreset.name);
 
@@ -878,8 +940,7 @@ function applyAEPresetsSequentially(entrancePreset, exitPreset, batchMode, callb
         });
     } else if (exitPreset) {
         // Only exit
-        const escapedPath = exitPreset.path.replace(/\\/g, '\\\\');
-        const script = `$.global.applyFFXPreset("${escapedPath}", ${batchMode}, "exit")`;
+        const script = `$.global.applyFFXPreset(${JSON.stringify(exitPreset.path)}, ${batchMode}, "exit")`;
 
         console.log('Applying exit preset:', exitPreset.name);
 
@@ -1327,10 +1388,7 @@ function setupEventListeners() {
             favoritesToggleBtn.classList.toggle('active');
 
             // Update star icon
-            const starIcon = favoritesToggleBtn.querySelector('.star-icon');
-            if (starIcon) {
-                starIcon.textContent = state.showOnlyFavorites ? '⭐' : '☆';
-            }
+            // Update star icon state handled by CSS toggle of 'active' class
 
             // Toggle between flat favorites and categorized view
             const flatContainer = document.getElementById('favoritesFlatContainer');
@@ -1398,6 +1456,7 @@ function setupEventListeners() {
     }
 
     elements.resetBtn.addEventListener('click', handleReset);
+    elements.keysInOutBtn.addEventListener('click', handleKeysInOut);
     elements.refreshBtn.addEventListener('click', handleRefresh);
     elements.importSRTBtn.addEventListener('click', handleImportSRT);
     elements.srtFileInput.addEventListener('change', handleSRTFileSelected);
@@ -1516,6 +1575,27 @@ function handleReset() {
     });
 }
 
+function handleKeysInOut() {
+    elements.keysInOutBtn.disabled = true;
+    setStatus('Alineando keyframes...', 'loading');
+
+    evalScript('$.global.alignKeysToInOut()', function (result) {
+        elements.keysInOutBtn.disabled = false;
+        try {
+            const data = JSON.parse(result);
+            if (data.error) {
+                setStatus(`Error: ${data.error}`, 'error');
+                return;
+            }
+            if (data.success) {
+                setStatus(`✓ ${data.layersProcessed} capas alineadas`, 'success');
+            }
+        } catch (e) {
+            setStatus(`Error: ${e.message}`, 'error');
+        }
+    });
+}
+
 function handleRefresh() {
     setStatus('Actualizando...', 'loading');
     loadPresets();
@@ -1545,128 +1625,103 @@ function handlePresetFilesSelected(event) {
     }
 
     debugLog(`Archivos seleccionados: ${Array.from(files).map(f => f.name).join(', ')}`, 'info');
-
     setStatus('Importando presets...', 'loading');
 
-    // Disable the correct button (importPresetBtn, not importPresetsBtn)
     const importBtn = document.getElementById('importPresetBtn');
     if (importBtn) importBtn.disabled = true;
 
-    // Get extension presets path - save to /presets/animate/ folder
     const extensionPath = csInterface.getSystemPath(SystemPath.EXTENSION);
     const presetsPath = extensionPath + "/presets/animate";
 
-    debugLog(`Ruta de destino: ${presetsPath}`, 'info');
-
+    const validFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.ffx'));
+    const totalFiles = files.length;
+    let processedCount = 0;
     let importedCount = 0;
     let errorCount = 0;
-    let processedCount = 0;
-    const totalFiles = files.length;
-
-    // Validate all files first
-    const validFiles = Array.from(files).filter(file => {
-        if (!file.name.toLowerCase().endsWith('.ffx')) {
-            errorCount++;
-            processedCount++;
-            return false;
-        }
-        return true;
-    });
 
     if (validFiles.length === 0) {
-        finishImport();
+        setStatus(`Error: Solo se aceptan archivos .ffx`, 'error');
+        if (importBtn) importBtn.disabled = false;
         return;
     }
 
-    // Process each valid file
-    validFiles.forEach((file, index) => {
-
+    validFiles.forEach((file) => {
+        const fileName = file.name;
         const reader = new FileReader();
 
         reader.onload = function (e) {
-            try {
-                // Convert ArrayBuffer to base64
-                const bytes = new Uint8Array(e.target.result);
-                let binary = '';
-                for (let i = 0; i < bytes.length; i++) {
-                    binary += String.fromCharCode(bytes[i]);
+            const arrayBuffer = e.target.result;
+            const buffer = Buffer.from(arrayBuffer);
+
+            let success = false;
+
+            // Try saving via Node.js first (more robust)
+            if (fs) {
+                try {
+                    if (!fs.existsSync(presetsPath)) {
+                        fs.mkdirSync(presetsPath, { recursive: true });
+                    }
+                    const filePath = path.join(presetsPath, fileName);
+                    fs.writeFileSync(filePath, buffer);
+                    success = true;
+                    debugLog(`✓ Preset guardado con Node.js: ${fileName}`, 'info');
+                } catch (fsErr) {
+                    console.error('Node.js save failed:', fsErr);
                 }
-                const base64Data = btoa(binary);
-                const fileName = file.name;
+            }
 
-                debugLog(`Enviando archivo: ${fileName} (${bytes.length} bytes)`, 'info');
-
-                // Call JSX to save file
-                const script = `$.global.saveFFXFile("${presetsPath.replace(/\\/g, '\\\\')}", "${fileName}", "${base64Data}")`;
+            // Fallback to JSX if Node.js fails or is not available
+            if (!success) {
+                const base64Data = buffer.toString('base64');
+                const script = `$.global.saveFFXFile(${JSON.stringify(presetsPath)}, ${JSON.stringify(fileName)}, ${JSON.stringify(base64Data)})`;
 
                 evalScript(script, function (result) {
                     try {
+                        if (!result || result === 'undefined') throw new Error('JSX no devolvió respuesta');
                         const data = JSON.parse(result);
                         if (data.success) {
                             importedCount++;
                             debugLog(`✓ Preset importado: ${fileName}`, 'success');
                         } else {
                             errorCount++;
-                            debugLog(`✗ Error importando: ${fileName} - ${data.error}`, 'error');
+                            debugLog(`✗ Error en JSX: ${fileName} - ${data.error}`, 'error');
                         }
-                    } catch (e) {
+                    } catch (err) {
                         errorCount++;
-                        debugLog(`✗ Error parseando resultado: ${fileName} - ${e.message}`, 'error');
+                        debugLog(`✗ Error crítico: ${fileName} - ${err.message}`, 'error');
                     }
-
-                    processedCount++;
-                    checkIfFinished();
+                    finalize();
                 });
-            } catch (e) {
-                errorCount++;
-                processedCount++;
-                debugLog(`✗ Error procesando: ${file.name} - ${e.message}`, 'error');
-                checkIfFinished();
+            } else {
+                importedCount++;
+                debugLog(`✓ Preset importado: ${fileName}`, 'success');
+                finalize();
             }
         };
 
         reader.onerror = function () {
             errorCount++;
-            processedCount++;
             debugLog(`✗ Error leyendo archivo: ${file.name}`, 'error');
-            checkIfFinished();
+            finalize();
         };
 
-        // Use ArrayBuffer for binary files (NOT BinaryString)
         reader.readAsArrayBuffer(file);
     });
 
-    function checkIfFinished() {
-        debugLog(`Progreso: ${processedCount}/${totalFiles} procesados, ${importedCount} importados, ${errorCount} errores`, 'info');
+    function finalize() {
+        processedCount++;
+        if (processedCount === validFiles.length) {
+            if (importedCount > 0) {
+                setStatus(`✓ ${importedCount} preset(s) importado(s)`, 'success');
+                setTimeout(() => loadAEPresets(), 500);
+            } else {
+                setStatus('Error al importar presets', 'error');
+            }
 
-        if (processedCount >= totalFiles) {
-            finishImport();
+            if (importBtn) importBtn.disabled = false;
+            event.target.value = '';
+            debugLog('=== Importación finalizada ===', 'info');
         }
-    }
-
-    function finishImport() {
-        // Re-enable button
-        if (importBtn) importBtn.disabled = false;
-
-        if (importedCount > 0) {
-            setStatus(`✓ ${importedCount} preset(s) importado(s)`, 'success');
-            // Reload AE presets to show new files
-            setTimeout(() => {
-                loadAEPresets();
-            }, 500);
-        } else if (errorCount > 0) {
-            setStatus(`Error: Solo se aceptan archivos .ffx`, 'error');
-        } else {
-            setStatus('No se importaron archivos', 'error');
-            debugLog('No se importaron archivos válidos', 'warning');
-        }
-
-        // Clear input to allow re-importing the same file
-        event.target.value = '';
-
-        debugLog('=== Importación finalizada ===', 'info');
-
-        console.log('✅ Importación finalizada');
     }
 }
 
@@ -1685,7 +1740,7 @@ function handleSaveSelection() {
 
     debugLog(`Guardando preset "${presetName}" en: ${presetsPath}`, 'info');
 
-    const script = `$.global.saveSelectionAsPreset("${presetsPath.replace(/\\/g, '\\\\')}", "${presetName}")`;
+    const script = `$.global.saveSelectionAsPreset(${JSON.stringify(presetsPath)}, ${JSON.stringify(presetName)})`;
 
     evalScript(script, function (result) {
         try {
@@ -1727,7 +1782,7 @@ function handleRenamePreset() {
 
     setStatus('Renombrando preset...', 'loading');
 
-    const script = `$.global.renameFFXFile("${targetPreset.path.replace(/\\/g, '\\\\')}", "${newName}")`;
+    const script = `$.global.renameFFXFile(${JSON.stringify(targetPreset.path)}, ${JSON.stringify(newName)})`;
 
     evalScript(script, function (result) {
         try {
@@ -1778,7 +1833,7 @@ function handleDeleteSelectedPreset() {
 
     setStatus('Borrando preset...', 'loading');
 
-    const script = `$.global.deleteFFXFile("${targetPreset.path.replace(/\\/g, '\\\\')}")`;
+    const script = `$.global.deleteFFXFile(${JSON.stringify(targetPreset.path)})`;
 
     evalScript(script, function (result) {
         try {
@@ -1831,7 +1886,7 @@ function handlePresetImport(event) {
     const aePresetsPath = csInterface.getSystemPath(SystemPath.EXTENSION) + '/presets';
 
     // Call importPresetFile function
-    const script = `$.global.importPresetFile("${filePath.replace(/\\/g, '\\\\')}", "${aePresetsPath.replace(/\\/g, '\\\\')}")`;
+    const script = `$.global.importPresetFile(${JSON.stringify(filePath)}, ${JSON.stringify(aePresetsPath)})`;
 
     evalScript(script, function (result) {
         try {
@@ -1870,35 +1925,45 @@ function handleSRTFileSelected(event) {
 }
 
 function importSRTContent(srtContent) {
-    setStatus('Importando subtítulos...', 'loading');
-    elements.importSRTBtn.disabled = true;
+    try {
+        setStatus('Preparando importación...', 'loading');
+        if (elements.importSRTBtn) elements.importSRTBtn.disabled = true;
 
-    const extensionPath = csInterface.getSystemPath(SystemPath.EXTENSION);
-    const escapedPath = extensionPath.replace(/\\/g, "\\\\");
+        // Ensure extensionPath is defined
+        const extPath = typeof extensionPath !== 'undefined' ? extensionPath : csInterface.getSystemPath(SystemPath.EXTENSION);
 
-    const script = `$.global.importSRT(` + JSON.stringify(srtContent) + `, "${escapedPath}")`;
+        setStatus('Conectando con After Effects...', 'loading');
+        const script = "$.global.importSRT(" + JSON.stringify(srtContent) + ", " + JSON.stringify(extPath) + ");";
 
-    evalScript(script, function (result) {
-        elements.importSRTBtn.disabled = false;
+        evalScript(script, function (result) {
+            if (elements.importSRTBtn) elements.importSRTBtn.disabled = false;
 
-        try {
-            const data = JSON.parse(result);
-
-            if (data.error) {
-                setStatus(`Error: ${data.error}`, 'error');
+            if (!result || result === "undefined") {
+                setStatus('Error: AE no respondió', 'error');
                 return;
             }
 
-            if (data.success) {
-                const message = `✓ ${data.layersCreated} capas creadas`;
-                setStatus(message, 'success');
-                updateCompInfo();
-            }
+            try {
+                const data = JSON.parse(result);
 
-        } catch (e) {
-            setStatus(`Error: ${e.message}`, 'error');
-        }
-    });
+                if (data.error) {
+                    setStatus('Error AE: ' + data.error, 'error');
+                    return;
+                }
+
+                if (data.success) {
+                    setStatus('✓ ' + data.layersCreated + ' capas creadas', 'success');
+                    updateCompInfo();
+                }
+
+            } catch (e) {
+                setStatus('Error de datos: ' + e.message, 'error');
+            }
+        });
+    } catch (err) {
+        setStatus('Excepción: ' + err.message, 'error');
+        if (elements.importSRTBtn) elements.importSRTBtn.disabled = false;
+    }
 }
 
 function updateCompInfo() {
@@ -1945,8 +2010,8 @@ function saveState() {
             selectedEffects: state.selectedEffects,
             currentTab: state.currentTab,
             favoritePresets: Array.from(state.favoritePresets),
-            favoriteEffects: Array.from(state.favoriteEffects),
-            showOnlyFavorites: state.showOnlyFavorites
+            favoriteEffects: Array.from(state.favoriteEffects)
+            // showOnlyFavorites is removed to start normal as default
         };
 
         const json = JSON.stringify(stateToSave);
@@ -2000,22 +2065,16 @@ function loadState() {
             }
         }
 
-        if (saved) {
-            const savedState = JSON.parse(saved);
-            state.selectedEffects = savedState.selectedEffects || { entrance: null, exit: null };
-            state.currentTab = savedState.currentTab || 'quick';
-            state.favoritePresets = new Set(savedState.favoritePresets || []);
-            state.favoriteEffects = new Set(savedState.favoriteEffects || []);
-            state.showOnlyFavorites = savedState.showOnlyFavorites || false;
-
-            // Sync UI toggle button state
-            const favoritesToggleBtn = document.getElementById('favoritesToggleBtn');
-            if (favoritesToggleBtn) {
-                if (state.showOnlyFavorites) {
-                    favoritesToggleBtn.classList.add('active');
-                    const starIcon = favoritesToggleBtn.querySelector('.star-icon');
-                    if (starIcon) starIcon.textContent = '⭐';
-                }
+        if (saved && saved.trim().startsWith('{')) {
+            try {
+                const savedState = JSON.parse(saved);
+                state.selectedEffects = savedState.selectedEffects || { entrance: null, exit: null };
+                state.currentTab = savedState.currentTab || 'quick';
+                state.favoritePresets = new Set(savedState.favoritePresets || []);
+                state.favoriteEffects = new Set(savedState.favoriteEffects || []);
+                state.showOnlyFavorites = false; // Force normal view as default on startup
+            } catch (e) {
+                console.error('Error parsing state:', e);
             }
         }
     } catch (e) {

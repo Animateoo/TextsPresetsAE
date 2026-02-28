@@ -12,6 +12,7 @@ Además, incluye funciones para importar nuevos efectos, organizar tus favoritos
 
 *   🚀 **Aplicación Instantánea**: Aplica animaciones profesionales de entrada y salida con un solo botón.
 *   ⏱️ **Timing Automático**: Alineación inteligente de keyframes al *InPoint* y *OutPoint* de la capa seleccionada.
+*   🎯 **Alinear Keys**: Nuevo botón para alinear instantáneamente todos los keyframes seleccionados al punto de inicio (In) y fin (Out) de la capa.
 *   📂 **Librería Personalizable**: Organiza tus propios archivos `.ffx` y expándelos fácilmente con el botón de importación.
 *   💾 **Exportación Rápida**: Guarda tus combinaciones de efectos actuales como nuevos presets `.ffx` directamente desde el panel.
 *   🗿 **Gestión de Subtítulos (SRT)**: Importación nativa de archivos `.srt` para flujos de subtitulado veloces.
@@ -25,6 +26,13 @@ Además, incluye funciones para importar nuevos efectos, organizar tus favoritos
 2.  **Mover Carpeta**: Mueve la carpeta de la extensión a la ruta de Adobe:
     *   **Windows**: `C:\Program Files (x86)\Common Files\Adobe\CEP\extensions\`
     *   **macOS**: `/Library/Application Support/Adobe/CEP/extensions/`
+3.  **Permisos de Carpeta (Windows - CRÍTICO)**:
+    Para que la importación de presets y el guardado de estado funcionen correctamente, debes dar permisos de escritura a la carpeta:
+    1.  Ve a `C:\Program Files (x86)\Common Files\Adobe\CEP\extensions\`
+    2.  Click derecho en la carpeta **TextPresets** -> **Propiedades**.
+    3.  Pestaña **Seguridad** -> Click en **Editar**.
+    4.  Busca el grupo **"Usuarios"** (o tu nombre de usuario) y marca la casilla **"Control Total"** o **"Modificar"**.
+    5.  Dale a **Aceptar** en todo.
 
 ---
 
@@ -48,6 +56,14 @@ defaults write com.adobe.CSXS.11 PlayerDebugMode 1
 defaults write com.adobe.CSXS.12 PlayerDebugMode 1
 ```
 *(Nota: Hemos incluido las versiones 10, 11 y 12 para cubrir desde AE 2021 hasta AE 2024/2025+)*.
+
+---
+
+## 🔄 Últimas Actualizaciones (v3.1.0)
+*   **Alineación de Keyframes**: Añadido el botón "Alinear Keys a IN/OUT" para ajustar el tiempo de tus animaciones de forma manual con un clic.
+*   **Solución definitiva al error de JSON**: Corregido el problema de "Unexpected token : in JSON" que afectaba a usuarios con Windows en otros idiomas.
+*   **Motor de archivos estable**: Ahora las importaciones se manejan vía Node.js para evitar bloqueos del sistema.
+*   **Interfaz Premium**: Actualización de íconos vectoriales y layout más limpio para mayor comodidad.
 
 ---
 

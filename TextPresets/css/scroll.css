@@ -17,22 +17,20 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(26, 26, 26, 0.85);
-    /* Semi-transparent instead of solid */
+    background: rgba(26, 26, 26, 0.95);
     backdrop-filter: blur(10px);
-    /* Blur effect for better readability */
-    border-top: 2px solid #3a3a3a;
-    padding: 4px 8px;
+    border-top: 1px solid #fc9300;
+    padding: 2px;
     z-index: 1000;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* Controls Rows */
 .controls-row {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 3px;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 2px;
 }
 
 /* Speed Compact Controls */
@@ -103,20 +101,26 @@
 
 /* Compact Buttons */
 .btn-compact {
-    padding: 5px 10px;
+    padding: 4px 6px;
+    height: 32px;
     font-size: 13px;
-    background: #2a2a2a;
-    border: 1px solid #3a3a3a;
+    background: #333;
+    border: 1px solid #444;
     border-radius: 3px;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: none;
+    color: #fff;
 }
 
 .btn-compact:hover {
     background: #3a3a3a;
     border-color: #4a4a4a;
-    transform: translateY(-1px);
 }
 
 .btn-compact:active {
@@ -127,7 +131,7 @@
 .apply-buttons-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+    gap: 2px;
 }
 
 .apply-buttons-row .btn-apply {
@@ -143,40 +147,61 @@
 }
 
 .apply-buttons-row .btn-apply:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    opacity: 0.9;
 }
 
-.apply-buttons-row .btn-apply:active {
-    transform: translateY(0);
+/* Button Theme - Professional Dark with Subtle Accents */
+.apply-buttons-row .btn-apply {
+    padding: 10px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    background: #333;
+    color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
 }
 
-/* Button Colors */
 .btn-entrance {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    color: #fff;
+    border-bottom: 2px solid #4CAF50 !important;
 }
 
 .btn-entrance:hover {
-    background: linear-gradient(135deg, #5CBF60 0%, #4CAF50 100%);
+    background: #3a3a3a;
+    color: #4CAF50;
+    border-color: #4CAF50;
 }
 
 .btn-exit {
-    background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
-    color: #fff;
+    border-bottom: 2px solid #FF5722 !important;
 }
 
 .btn-exit:hover {
-    background: linear-gradient(135deg, #FF6732 0%, #FF5722 100%);
+    background: #3a3a3a;
+    color: #FF5722;
+    border-color: #FF5722;
 }
 
 .btn-both {
-    background: linear-gradient(135deg, #5a9fd4 0%, #4a8fc4 100%);
-    color: #fff;
+    border-bottom: 2px solid #5a9fd4 !important;
 }
 
 .btn-both:hover {
-    background: linear-gradient(135deg, #6aafde 0%, #5a9fd4 100%);
+    background: #3a3a3a;
+    color: #6aafde;
+    border-color: #5a9fd4;
+}
+
+.apply-buttons-row .btn-apply:active {
+    background: #222;
 }
 
 /* Scrollbar Styling */
